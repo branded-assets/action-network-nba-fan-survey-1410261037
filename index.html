@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NBA Fan Confidence Survey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#11151C;
+    --panel:#1A202A;
+    --panel-2:#212938;
+    --line:#2A3242;
+    --amber:#F2A93B;
+    --teal:#36C9C0;
+    --text:#ECEEF2;
+    --muted:#8C94A6;
+    --worse:#3A4254;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:'IBM Plex Sans', system-ui, -apple-system, Arial, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:36px 20px 60px;}
+
+  header.top{margin-bottom:28px;}
+  .kicker{
+    font-family:'Oswald', sans-serif; font-weight:600; letter-spacing:.04em;
+    color:var(--amber); font-size:13px; text-transform:uppercase; margin:0 0 6px;
+  }
+  h1{
+    font-family:'Oswald', sans-serif; font-weight:700; font-size:clamp(26px,5vw,38px);
+    line-height:1.12; margin:0 0 10px; letter-spacing:.01em;
+  }
+  .sub{color:var(--muted); font-size:15px; line-height:1.55; max-width:62ch; margin:0;}
+  .sub b{color:var(--text); font-weight:600;}
+
+  nav.tabs{
+    display:flex; gap:6px; margin:28px 0 22px; border-bottom:1px solid var(--line);
+    overflow-x:auto;
+  }
+  nav.tabs button{
+    font-family:'Oswald', sans-serif; font-weight:600; font-size:14px;
+    background:none; border:none; color:var(--muted); cursor:pointer;
+    padding:12px 4px; margin-right:22px; position:relative; white-space:nowrap;
+    letter-spacing:.01em;
+  }
+  nav.tabs button span.num{color:var(--amber); margin-right:6px;}
+  nav.tabs button.active{color:var(--text);}
+  nav.tabs button.active::after{
+    content:""; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--amber);
+  }
+
+  .panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:26px 24px; margin-bottom:18px;
+  }
+  .q-text{font-size:16px; color:var(--text); margin:0 0 20px; line-height:1.5; font-weight:500;}
+
+  .headline{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:22px;}
+  .headline .big{font-family:'Oswald', sans-serif; font-weight:700; font-size:54px; color:var(--amber); line-height:1;}
+  .headline .cap{font-size:14px; color:var(--muted); max-width:38ch; line-height:1.4;}
+
+  .segmented{display:flex; gap:4px; background:var(--panel-2); border:1px solid var(--line); border-radius:8px; padding:4px; width:fit-content; margin-bottom:22px;}
+  .segmented button{
+    font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:600; color:var(--muted);
+    background:none; border:none; padding:7px 13px; border-radius:6px; cursor:pointer;
+  }
+  .segmented button.active{background:var(--amber); color:#1A1204;}
+
+  .team-select{margin-bottom:18px;}
+  .team-select select{
+    font-family:'IBM Plex Sans',sans-serif; font-size:14px; background:var(--panel-2); color:var(--text);
+    border:1px solid var(--line); border-radius:7px; padding:9px 12px; width:100%; max-width:320px;
+  }
+  .small-n{color:var(--muted); font-size:12px; margin-top:6px;}
+
+  .barrow{margin-bottom:14px;}
+  .barrow .lbl{
+    display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; color:var(--text);
+  }
+  .barrow .lbl .val{font-weight:600; color:var(--amber); font-family:'Oswald',sans-serif;}
+  .track{background:var(--panel-2); border-radius:6px; height:14px; overflow:hidden; position:relative; border:1px solid var(--line);}
+  .fill{height:100%; background:linear-gradient(90deg, var(--amber), #D98C1F); border-radius:6px 0 0 6px; transition:width .5s ease;}
+  .fill.teal{background:linear-gradient(90deg, var(--teal), #1F9890);}
+
+  .stackrow{margin-bottom:16px;}
+  .stackrow .lbl{font-size:13px; margin-bottom:6px; color:var(--text); display:flex; justify-content:space-between;}
+  .stacktrack{display:flex; height:22px; border-radius:6px; overflow:hidden; border:1px solid var(--line);}
+  .seg{height:100%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#101418; transition:width .5s ease;}
+  .seg.better{background:var(--amber);}
+  .seg.same{background:#E8C878;}
+  .seg.almost{background:#E8DCA8;}
+  .seg.worse{background:var(--worse); color:var(--muted); font-weight:500;}
+  .legend{display:flex; gap:16px; flex-wrap:wrap; margin-top:10px; font-size:12px; color:var(--muted);}
+  .legend span.dot{display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; vertical-align:-1px;}
+
+  .callout{
+    border-top:1px solid var(--line); margin-top:22px; padding-top:18px;
+    font-size:13.5px; color:var(--muted); line-height:1.6;
+  }
+  .callout b{color:var(--text);}
+
+  footer{color:var(--muted); font-size:12.5px; line-height:1.6; margin-top:30px; border-top:1px solid var(--line); padding-top:18px;}
+  footer p{margin:0 0 6px;}
+
+  @media (max-width:480px){
+    .headline .big{font-size:44px;}
+    .panel{padding:20px 16px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <p class="kicker">ActionNetwork.com &middot; NBA Fan Survey</p>
+    <h1>How good do NBA fans think they really are?</h1>
+    <p class="sub">We asked <b>4,398 US NBA fans</b> to rate their own game against the pros &mdash; from half-court heroics to a shot from downtown. Explore the full results below, broken down by gender, age and team fandom.</p>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="active" data-tab="q6"><span class="num">Q1</span>Half-court shot</button>
+    <button data-tab="q7"><span class="num">Q2</span>Buckets vs. a pro</button>
+    <button data-tab="q8"><span class="num">Q3</span>Three-point shot</button>
+  </nav>
+
+  <!-- Q6 -->
+  <section class="panel tabpanel" id="panel-q6">
+    <p class="q-text">"Do you think you could sink a half-court shot?"</p>
+    <div class="headline">
+      <div class="big">41%</div>
+      <div class="cap">of NBA fans believe they could make a half-court shot &mdash; something even many pros fail to do consistently.</div>
+    </div>
+
+    <div class="segmented" data-group="q6">
+      <button class="active" data-view="overall">Overall</button>
+      <button data-view="gender">By gender</button>
+      <button data-view="age">By age</button>
+      <button data-view="team">By team</button>
+    </div>
+
+    <div class="view-body" data-group="q6"></div>
+  </section>
+
+  <!-- Q7 -->
+  <section class="panel tabpanel" id="panel-q7" style="display:none;">
+    <p class="q-text">"In a game of pick-up basketball, how many buckets do you think you could score against the average pro?"</p>
+    <div class="headline">
+      <div class="big">2.4</div>
+      <div class="cap">average buckets fans expect to score against a pro &mdash; and not a single fan surveyed said they'd score zero.</div>
+    </div>
+
+    <div class="segmented" data-group="q7">
+      <button class="active" data-view="overall">Overall</button>
+      <button data-view="gender">By gender</button>
+      <button data-view="age">By age</button>
+      <button data-view="team">By team</button>
+    </div>
+
+    <div class="view-body" data-group="q7"></div>
+  </section>
+
+  <!-- Q8 -->
+  <section class="panel tabpanel" id="panel-q8" style="display:none;">
+    <p class="q-text">"How do you think your three-point shot compares to that of the average pro?"</p>
+    <div class="headline">
+      <div class="big">31%</div>
+      <div class="cap">of fans rate their three-pointer as better than, the same as, or almost as good as a pro's.</div>
+    </div>
+
+    <div class="segmented" data-group="q8">
+      <button class="active" data-view="overall">Overall</button>
+      <button data-view="gender">By gender</button>
+      <button data-view="age">By age</button>
+      <button data-view="team">By team</button>
+    </div>
+
+    <div class="view-body" data-group="q8"></div>
+  </section>
+
+  <footer>
+    <p><b>Methodology:</b> Research carried out online among a sample of 4,398 US NBA fans, surveyed between 2&ndash;6 October 2026. Team breakdowns with fewer than 50 respondents are flagged as a small sample size.</p>
+  </footer>
+</div>
+
+<script>
+const DATA = {
+  q6: {
+    overall: {yes:41, no:59},
+    gender: {Male:55, Female:24},
+    age: {"18-24":52, "25-34":53, "35-44":47, "45-54":43, "55+":25},
+    team: {"Atlanta Hawks": {"n": 115, "yes": 49}, "Boston Celtics": {"n": 303, "yes": 42}, "Brooklyn Nets": {"n": 53, "yes": 57}, "Charlotte Hornets": {"n": 97, "yes": 48}, "Chicago Bulls": {"n": 393, "yes": 39}, "Cleveland Cavaliers": {"n": 160, "yes": 39}, "Dallas Mavericks": {"n": 147, "yes": 40}, "Denver Nuggets": {"n": 103, "yes": 47}, "Detroit Pistons": {"n": 158, "yes": 43}, "Golden State Warriors": {"n": 299, "yes": 36}, "Houston Rockets": {"n": 122, "yes": 46}, "Indiana Pacers": {"n": 104, "yes": 34}, "Los Angeles Clippers": {"n": 56, "yes": 57}, "Los Angeles Lakers": {"n": 467, "yes": 45}, "Memphis Grizzlies": {"n": 57, "yes": 35}, "Miami Heat": {"n": 140, "yes": 37}, "Milwaukee Bucks": {"n": 99, "yes": 27}, "Minnesota Timberwolves": {"n": 105, "yes": 47}, "New Orleans Pelicans": {"n": 56, "yes": 43}, "New York Knicks": {"n": 380, "yes": 40}, "Oklahoma City Thunder": {"n": 106, "yes": 37}, "Orlando Magic": {"n": 81, "yes": 37}, "Philadelphia 76ers": {"n": 243, "yes": 49}, "Phoenix Suns": {"n": 113, "yes": 27}, "Portland Trail Blazers": {"n": 77, "yes": 39}, "Sacramento Kings": {"n": 44, "yes": 41}, "San Antonio Spurs": {"n": 181, "yes": 41}, "Toronto Raptors": {"n": 16, "yes": 6}, "Utah Jazz": {"n": 42, "yes": 45}, "Washington Wizards": {"n": 81, "yes": 32}}
+  },
+  q7: {
+    overall: [
+      {label:"0 buckets", value:0},
+      {label:"1 bucket", value:50},
+      {label:"2 buckets", value:17},
+      {label:"3 buckets", value:12},
+      {label:"4 buckets", value:9},
+      {label:"5 buckets", value:5},
+      {label:"6 buckets", value:3},
+      {label:"7 buckets", value:3},
+      {label:"8+ buckets", value:2}
+    ],
+    gender: {Male:2.5, Female:2.3},
+    age: {"18-24":3.0, "25-34":3.0, "35-44":2.5, "45-54":2.5, "55+":1.8},
+    team: {"Atlanta Hawks": {"n": 115, "avg": 2.7}, "Boston Celtics": {"n": 303, "avg": 2.3}, "Brooklyn Nets": {"n": 53, "avg": 2.9}, "Charlotte Hornets": {"n": 97, "avg": 2.1}, "Chicago Bulls": {"n": 393, "avg": 2.6}, "Cleveland Cavaliers": {"n": 160, "avg": 2.1}, "Dallas Mavericks": {"n": 147, "avg": 2.5}, "Denver Nuggets": {"n": 103, "avg": 2.5}, "Detroit Pistons": {"n": 158, "avg": 2.5}, "Golden State Warriors": {"n": 299, "avg": 2.5}, "Houston Rockets": {"n": 122, "avg": 2.6}, "Indiana Pacers": {"n": 104, "avg": 1.7}, "Los Angeles Clippers": {"n": 56, "avg": 2.9}, "Los Angeles Lakers": {"n": 467, "avg": 2.5}, "Memphis Grizzlies": {"n": 57, "avg": 2.3}, "Miami Heat": {"n": 140, "avg": 2.6}, "Milwaukee Bucks": {"n": 99, "avg": 2.1}, "Minnesota Timberwolves": {"n": 105, "avg": 2.5}, "New Orleans Pelicans": {"n": 56, "avg": 2.4}, "New York Knicks": {"n": 380, "avg": 2.3}, "Oklahoma City Thunder": {"n": 106, "avg": 2.0}, "Orlando Magic": {"n": 81, "avg": 2.3}, "Philadelphia 76ers": {"n": 243, "avg": 2.8}, "Phoenix Suns": {"n": 113, "avg": 2.0}, "Portland Trail Blazers": {"n": 77, "avg": 2.0}, "Sacramento Kings": {"n": 44, "avg": 2.2}, "San Antonio Spurs": {"n": 181, "avg": 2.4}, "Toronto Raptors": {"n": 16, "avg": 2.2}, "Utah Jazz": {"n": 42, "avg": 2.5}, "Washington Wizards": {"n": 81, "avg": 2.3}}
+  },
+  q8: {
+    overall: {better:6, same:11, almost:14, worse:68},
+    gender: {
+      Male:{better:7, same:10, almost:16, worse:67},
+      Female:{better:6, same:13, almost:13, worse:69}
+    },
+    age: {
+      "18-24":{better:10, same:20, almost:17, worse:53},
+      "25-34":{better:11, same:17, almost:19, worse:52},
+      "35-44":{better:7, same:13, almost:17, worse:63},
+      "45-54":{better:6, same:10, almost:14, worse:70},
+      "55+":{better:3, same:6, almost:9, worse:82}
+    },
+    team: {"Atlanta Hawks": {"n": 115, "better": 13, "same": 14, "almost": 17, "worse": 56}, "Boston Celtics": {"n": 303, "better": 4, "same": 10, "almost": 13, "worse": 74}, "Brooklyn Nets": {"n": 53, "better": 9, "same": 36, "almost": 19, "worse": 36}, "Charlotte Hornets": {"n": 97, "better": 4, "same": 18, "almost": 12, "worse": 66}, "Chicago Bulls": {"n": 393, "better": 8, "same": 13, "almost": 17, "worse": 62}, "Cleveland Cavaliers": {"n": 160, "better": 7, "same": 8, "almost": 15, "worse": 71}, "Dallas Mavericks": {"n": 147, "better": 10, "same": 12, "almost": 20, "worse": 59}, "Denver Nuggets": {"n": 103, "better": 8, "same": 11, "almost": 13, "worse": 69}, "Detroit Pistons": {"n": 158, "better": 6, "same": 11, "almost": 13, "worse": 70}, "Golden State Warriors": {"n": 299, "better": 6, "same": 9, "almost": 14, "worse": 70}, "Houston Rockets": {"n": 122, "better": 9, "same": 14, "almost": 16, "worse": 61}, "Indiana Pacers": {"n": 104, "better": 4, "same": 5, "almost": 9, "worse": 83}, "Los Angeles Clippers": {"n": 56, "better": 11, "same": 18, "almost": 11, "worse": 61}, "Los Angeles Lakers": {"n": 467, "better": 6, "same": 11, "almost": 20, "worse": 63}, "Memphis Grizzlies": {"n": 57, "better": 5, "same": 7, "almost": 19, "worse": 68}, "Miami Heat": {"n": 140, "better": 11, "same": 11, "almost": 15, "worse": 63}, "Milwaukee Bucks": {"n": 99, "better": 4, "same": 8, "almost": 5, "worse": 83}, "Minnesota Timberwolves": {"n": 105, "better": 5, "same": 11, "almost": 16, "worse": 68}, "New Orleans Pelicans": {"n": 56, "better": 9, "same": 14, "almost": 9, "worse": 68}, "New York Knicks": {"n": 380, "better": 4, "same": 11, "almost": 11, "worse": 73}, "Oklahoma City Thunder": {"n": 106, "better": 6, "same": 7, "almost": 10, "worse": 77}, "Orlando Magic": {"n": 81, "better": 6, "same": 11, "almost": 12, "worse": 70}, "Philadelphia 76ers": {"n": 243, "better": 5, "same": 12, "almost": 17, "worse": 65}, "Phoenix Suns": {"n": 113, "better": 4, "same": 9, "almost": 11, "worse": 76}, "Portland Trail Blazers": {"n": 77, "better": 6, "same": 13, "almost": 5, "worse": 75}, "Sacramento Kings": {"n": 44, "better": 9, "same": 18, "almost": 9, "worse": 64}, "San Antonio Spurs": {"n": 181, "better": 8, "same": 10, "almost": 13, "worse": 69}, "Toronto Raptors": {"n": 16, "better": 0, "same": 25, "almost": 6, "worse": 69}, "Utah Jazz": {"n": 42, "better": 5, "same": 7, "almost": 14, "worse": 74}, "Washington Wizards": {"n": 81, "better": 2, "same": 15, "almost": 12, "worse": 70}}
+  }
+};
+
+// ---------- tab switching ----------
+document.getElementById('tabs').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-tab]');
+  if(!btn) return;
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tabpanel').forEach(p=>p.style.display='none');
+  document.getElementById('panel-'+btn.dataset.tab).style.display='block';
+});
+
+// ---------- segmented control ----------
+document.querySelectorAll('.segmented').forEach(seg=>{
+  seg.addEventListener('click', e=>{
+    const btn = e.target.closest('button[data-view]');
+    if(!btn) return;
+    seg.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    render(seg.dataset.group, btn.dataset.view);
+  });
+});
+
+function barRow(label, value, max, suffix){
+  suffix = (suffix === undefined) ? '%' : suffix;
+  const pct = Math.min(100, (value/max)*100);
+  return `<div class="barrow">
+    <div class="lbl"><span>${label}</span><span class="val">${value}${suffix}</span></div>
+    <div class="track"><div class="fill" style="width:${pct}%"></div></div>
+  </div>`;
+}
+
+function stackRow(label, obj, n){
+  const total = obj.better+obj.same+obj.almost+obj.worse;
+  const nNote = (n && n<50) ? ` <span class="small-n">(small sample, n=${n})</span>` : '';
+  return `<div class="stackrow">
+    <div class="lbl"><span>${label}${nNote}</span><span class="val" style="color:var(--amber); font-family:'Oswald',sans-serif; font-weight:600;">${obj.better+obj.same+obj.almost}% as good or better</span></div>
+    <div class="stacktrack">
+      <div class="seg better" style="width:${obj.better}%">${obj.better>=5?obj.better+'%':''}</div>
+      <div class="seg same" style="width:${obj.same}%">${obj.same>=5?obj.same+'%':''}</div>
+      <div class="seg almost" style="width:${obj.almost}%">${obj.almost>=5?obj.almost+'%':''}</div>
+      <div class="seg worse" style="width:${obj.worse}%"></div>
+    </div>
+  </div>`;
+}
+
+function legendQ8(){
+  return `<div class="legend">
+    <span><span class="dot" style="background:var(--amber)"></span>Better than a pro</span>
+    <span><span class="dot" style="background:#E8C878"></span>The same as a pro</span>
+    <span><span class="dot" style="background:#E8DCA8"></span>Almost as good</span>
+    <span><span class="dot" style="background:var(--worse)"></span>Worse than a pro</span>
+  </div>`;
+}
+
+function teamSelectHTML(group){
+  const teams = Object.keys(DATA[group].team).sort();
+  const opts = teams.map(t=>`<option value="${t}">${t}</option>`).join('');
+  return `<div class="team-select"><select id="${group}-team-select">${opts}</select></div><div id="${group}-team-out"></div>`;
+}
+
+function renderTeamQ6(group, teamName){
+  const t = DATA.q6.team[teamName];
+  const out = document.getElementById(group+'-team-out');
+  out.innerHTML = barRow(teamName+" fans", t.yes, 100) +
+    `<p class="small-n">${t.n<50 ? 'Small sample size (n='+t.n+') &mdash; interpret with caution. ' : ''}League average: 41%</p>`;
+}
+function renderTeamQ7(group, teamName){
+  const t = DATA.q7.team[teamName];
+  const out = document.getElementById(group+'-team-out');
+  out.innerHTML = barRow(teamName+" fans, average buckets", t.avg, 4, '') +
+    `<p class="small-n">${t.n<50 ? 'Small sample size (n='+t.n+') &mdash; interpret with caution. ' : ''}League average: 2.4 buckets</p>`;
+}
+function renderTeamQ8(group, teamName){
+  const t = DATA.q8.team[teamName];
+  const out = document.getElementById(group+'-team-out');
+  out.innerHTML = stackRow(teamName+" fans", t, t.n) + legendQ8() +
+    `<p class="small-n" style="margin-top:10px;">League average: 31% rate themselves as good or better than a pro.</p>`;
+}
+
+function render(group, view){
+  const body = document.querySelector(`.view-body[data-group="${group}"]`);
+  let html = '';
+
+  if(group==='q6'){
+    if(view==='overall'){
+      html = barRow('Yes, I could sink it', DATA.q6.overall.yes, 100) +
+             barRow('No, I could not', DATA.q6.overall.no, 100);
+    } else if(view==='gender'){
+      html = Object.entries(DATA.q6.gender).map(([k,v])=>barRow(k, v, 100)).join('');
+    } else if(view==='age'){
+      html = Object.entries(DATA.q6.age).map(([k,v])=>barRow(k+' years old', v, 100)).join('');
+    } else if(view==='team'){
+      html = teamSelectHTML('q6');
+    }
+  }
+
+  if(group==='q7'){
+    if(view==='overall'){
+      html = DATA.q7.overall.map(d=>barRow(d.label, d.value, 55)).join('');
+    } else if(view==='gender'){
+      html = Object.entries(DATA.q7.gender).map(([k,v])=>barRow(k+' (average buckets)', v, 4, '')).join('');
+    } else if(view==='age'){
+      html = Object.entries(DATA.q7.age).map(([k,v])=>barRow(k+' (average buckets)', v, 4, '')).join('');
+    } else if(view==='team'){
+      html = teamSelectHTML('q7');
+    }
+  }
+
+  if(group==='q8'){
+    if(view==='overall'){
+      html = stackRow('All fans', DATA.q8.overall) + legendQ8();
+    } else if(view==='gender'){
+      html = Object.entries(DATA.q8.gender).map(([k,v])=>stackRow(k, v)).join('') + legendQ8();
+    } else if(view==='age'){
+      html = Object.entries(DATA.q8.age).map(([k,v])=>stackRow(k+' years old', v)).join('') + legendQ8();
+    } else if(view==='team'){
+      html = teamSelectHTML('q8');
+    }
+  }
+
+  body.innerHTML = html;
+
+  if(view==='team'){
+    const sel = document.getElementById(group+'-team-select');
+    const renderer = group==='q6' ? renderTeamQ6 : group==='q7' ? renderTeamQ7 : renderTeamQ8;
+    sel.value = 'Brooklyn Nets';
+    renderer(group, sel.value);
+    sel.addEventListener('change', ()=>renderer(group, sel.value));
+  }
+}
+
+render('q6','overall');
+render('q7','overall');
+render('q8','overall');
+</script>
+</body>
+</html>
